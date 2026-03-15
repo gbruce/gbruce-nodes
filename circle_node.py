@@ -1,0 +1,39 @@
+from . import __version__
+from PIL import Image, ImageDraw
+import numpy as np
+
+class CircleImageNode:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"width": ("INT",), "height": ("INT",), "batch_size": ("INT",)}}
+
+    RETURN_TYPES = ("IMAGE",)
+    CATEGORY = "gbruce-nodes"
+    FUNCTION = "generate"
+    VERSION = __version__
+
+    def _clamp(self, v, lo, hi):
+        return max(lo, min(hi, int(v)))
+
+    def generate(self, width=256, height=256, batch_size=1):
+        width = self._clamp(width, 8, 8192)
+        height = self._clamp(height, 8, 8192)
+        batch_size = self._clamp(batch_size, 1, 64)
+
+        size = (width, height)
+        radius = min(width, height) // 2
+        margin = max(2, min(4, radius // 16))
+        bbox = [ (width//2) - radius + margin,
+                 (height//2) - radius + margin,
+                 (width//2) + radius - margin,
+                 (height//2) + radius - margin ]
+
+        images = []
+        for _ in range(batch_size):
+            img = Image.new("RGB", size, "black")
+            draw = ImageDraw.Draw(img)
+            draw.ellipse(bbox, fill="white")
+            images.append(img)
+
+        # Return a tuple containing the list to match simple ComfyUI patterns
+        return (images,)
