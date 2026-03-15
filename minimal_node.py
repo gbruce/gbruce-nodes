@@ -5,6 +5,8 @@ This node provides a single STRING input and a single STRING output.
 Place the gbruce_nodes folder in ComfyUI's custom nodes directory (e.g., ComfyUI/custom_nodes/) and restart ComfyUI.
 """
 
+from . import __version__
+
 class EchoNode:
     @classmethod
     def INPUT_TYPES(cls):
@@ -13,7 +15,21 @@ class EchoNode:
     RETURN_TYPES = ("STRING",)
     CATEGORY = "gbruce-nodes"
     FUNCTION = "echo"
+    VERSION = __version__
 
     def echo(self, text="Hello from gbruce-nodes"):
         # Simple passthrough/echo implementation
         return (str(text),)
+
+class VersionNode:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {}}
+
+    RETURN_TYPES = ("STRING",)
+    CATEGORY = "gbruce-nodes"
+    FUNCTION = "version"
+    VERSION = __version__
+
+    def version(self):
+        return (str(__version__),)

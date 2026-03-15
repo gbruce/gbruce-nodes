@@ -1,5 +1,7 @@
 # gbruce_nodes package
 # Minimal package exposing the custom node(s).
-from .minimal_node import EchoNode
+__version__ = "0.1.0"
 
-__all__ = ["EchoNode"]
+from .minimal_node import EchoNode, VersionNode
+
+__all__ = ["EchoNode", "VersionNode"]
