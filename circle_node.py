@@ -1,10 +1,8 @@
 from . import __version__
 from PIL import Image, ImageDraw
 import numpy as np
-try:
-    import torch
-except Exception:
-    torch = None
+# Prefer returning numpy HxWx3 uint8 arrays which ComfyUI's image nodes accept
+torch = None
 
 class CircleImageNode:
     @classmethod
@@ -38,19 +36,16 @@ class CircleImageNode:
             draw = ImageDraw.Draw(img)
             draw.ellipse(bbox, fill="white")
             arr = np.array(img, dtype=np.uint8)
-            # Ensure RGB shape
+            # Normalize channels to HxWx3
             if arr.ndim == 2:
                 arr = np.stack([arr, arr, arr], axis=-1)
+            elif arr.ndim == 3 and arr.shape[2] == 1:
+                arr = np.concatenate([arr, arr, arr], axis=2)
+            elif arr.ndim == 3 and arr.shape[2] >= 4:
+                # If there is an alpha channel or unexpected extra channels, take first 3
+                arr = arr[:, :, :3]
 
-            # If torch is available, convert to CHW tensor with .cpu() support expected by ComfyUI
-            if torch is not None:
-                try:
-                    t = torch.from_numpy(arr).permute(2, 0, 1).contiguous()
-                    images.append(t)
-                except Exception:
-                    images.append(arr)
-            else:
-                images.append(arr)
+            images.append(arr)
 
-        # Return a tuple containing the list of image tensors/arrays as expected by ComfyUI
+        # Return a tuple containing the list of numpy arrays (HxWx3 uint8) as expected by ComfyUI
         return (images,)
