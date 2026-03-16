@@ -1,6 +1,10 @@
 from . import __version__
 from PIL import Image, ImageDraw
 import numpy as np
+try:
+    import torch
+except Exception:
+    torch = None
 
 class CircleImageNode:
     @classmethod
@@ -37,7 +41,16 @@ class CircleImageNode:
             # Ensure RGB shape
             if arr.ndim == 2:
                 arr = np.stack([arr, arr, arr], axis=-1)
-            images.append(arr)
 
-        # Return a tuple containing the list of numpy arrays as expected by ComfyUI
+            # If torch is available, convert to CHW tensor with .cpu() support expected by ComfyUI
+            if torch is not None:
+                try:
+                    t = torch.from_numpy(arr).permute(2, 0, 1).contiguous()
+                    images.append(t)
+                except Exception:
+                    images.append(arr)
+            else:
+                images.append(arr)
+
+        # Return a tuple containing the list of image tensors/arrays as expected by ComfyUI
         return (images,)
