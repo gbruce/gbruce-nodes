@@ -33,7 +33,11 @@ class CircleImageNode:
             img = Image.new("RGB", size, "black")
             draw = ImageDraw.Draw(img)
             draw.ellipse(bbox, fill="white")
-            images.append(img)
+            arr = np.array(img, dtype=np.uint8)
+            # Ensure RGB shape
+            if arr.ndim == 2:
+                arr = np.stack([arr, arr, arr], axis=-1)
+            images.append(arr)
 
-        # Return a tuple containing the list to match simple ComfyUI patterns
+        # Return a tuple containing the list of numpy arrays as expected by ComfyUI
         return (images,)
